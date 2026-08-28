@@ -9,6 +9,7 @@ from astral import moon
 import pytz
 from io import BytesIO
 import math
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -413,7 +414,7 @@ class QWeather(BasePlugin):
             "unit": "m" if units == "metric" else "i"
         }
         logger.info(f"Requesting weather data from: {url} with params: {params}")
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=(5, 30))
         logger.info(f"Response status: {response.status_code}")
 
         if response.status_code != 200:
@@ -442,7 +443,7 @@ class QWeather(BasePlugin):
                 "key": api_key,
                 "unit": "m" if units == "metric" else "i"
             }
-            response = requests.get(url, params=params)
+            response = requests.get(url, params=params, timeout=(5, 30))
 
             if response.status_code != 200:
                 logger.error(f"Failed to retrieve daily forecast. Status: {response.status_code}, Content: {response.content}")
@@ -470,7 +471,7 @@ class QWeather(BasePlugin):
             "key": api_key,
             "unit": "m" if units == "metric" else "i"
         }
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=(5, 30))
 
         if response.status_code != 200:
             logger.error(f"Failed to retrieve hourly forecast. Status: {response.status_code}, Content: {response.content}")
@@ -494,7 +495,7 @@ class QWeather(BasePlugin):
             "location": location_id,
             "key": api_key
         }
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=(5, 30))
 
         if response.status_code != 200:
             logger.warning(f"Failed to retrieve minutely forecast. Status: {response.status_code}, falling back to hourly only")
@@ -521,7 +522,7 @@ class QWeather(BasePlugin):
             params = {
                 "key": api_key
             }
-            response = requests.get(url, params=params)
+            response = requests.get(url, params=params, timeout=(5, 30))
 
             if response.status_code != 200:
                 logger.error(f"Failed to get air quality data: {response.content}")
@@ -551,7 +552,7 @@ class QWeather(BasePlugin):
             params = {
                 "key": api_key
             }
-            response = requests.get(url, params=params)
+            response = requests.get(url, params=params, timeout=(5, 30))
 
             if response.status_code != 200:
                 logger.error(f"Failed to get weather alerts: {response.content}")
@@ -572,11 +573,17 @@ class QWeather(BasePlugin):
         return self._get_cached_data(cache_key, fetch_alerts, 5)
 
     def create_mock_alert(self, headline, description, severity):
+        short_headline = headline
+        for sep in ('：', ':'):
+            if sep in headline:
+                short_headline = headline.split(sep)[0].strip()
+                break
         return [{
             'headline': headline,
+            'short_headline': short_headline or headline,
             'description': description,
             'severity': severity,
-            'eventType': {'name': headline},
+            'eventType': {'name': short_headline or headline},
             'issuedTime': datetime.now().isoformat(),
             'expireTime': (datetime.now() + timedelta(hours=24)).isoformat()
         }]
@@ -1085,7 +1092,17 @@ class QWeather(BasePlugin):
             if len(hourly_data) >= 24:
                 break
 
-        return hourly_data[:24]
+        hourly_data = hourly_data[:24]
+
+        # Smooth the precipitation probability with a 3-hour moving average
+        # for display: raw hourly values zigzag (e.g. 30/70/35/60%) and the
+        # bar chart looks jittery next to the smooth temperature line.
+        probs = [h["precipitation"] for h in hourly_data]
+        for i, h in enumerate(hourly_data):
+            lo, hi = max(0, i - 1), min(len(probs), i + 2)
+            h["precipitation"] = round(sum(probs[lo:hi]) / (hi - lo), 3)
+
+        return hourly_data
 
     def merge_minutely_and_hourly(self, minutely_forecast, hourly_forecast, tz, time_format, units, display_style="default"):
         """Merge minutely precipitation into hourly data: keep hourly temperature, replace precipitation for covered hours"""
@@ -1435,6 +1452,15 @@ class QWeather(BasePlugin):
                 if not headline and event_name:
                     headline = event_name
 
+            # Derive a short headline (alert type + level, e.g. "雷电黄色预警")
+            # so the header badge stays compact and never crowds out the date
+            short_headline = headline
+            for sep in ('：', ':'):
+                if sep in headline:
+                    short_headline = headline.split(sep)[0].strip()
+                    break
+            short_headline = re.sub(r'信号$', '', short_headline).strip() or headline
+
             if language == "en" and not headline:
                 headline = alert.get('eventType', {}).get('code', 'Weather Alert')
 
@@ -1442,6 +1468,7 @@ class QWeather(BasePlugin):
             if headline not in unique_alerts:
                 unique_alerts[headline] = {
                     'headline': headline,
+                    'short_headline': short_headline or headline,
                     'description': description[:200] if description else '',
                     'severity': severity,
                     'bg_color': colors['bg'],
@@ -1457,8 +1484,27 @@ class QWeather(BasePlugin):
                     unique_alerts[headline]['issued_time'] = new_issued
                     unique_alerts[headline]['expire_time'] = alert.get('expireTime', '')
 
-        # Convert back to list and limit to 3
-        parsed_alerts = list(unique_alerts.values())[:3]
+        # Most severe first (red > orange > yellow > blue), then fill the 2x2
+        # badge grid: top 3 alerts + a "+N条预警" counter badge if truncated,
+        # so nothing important is silently dropped
+        severity_rank = {"extreme": 0, "severe": 1, "moderate": 2, "minor": 3}
+        all_alerts = sorted(unique_alerts.values(),
+                            key=lambda a: severity_rank.get(a['severity'], 4))
+
+        if len(all_alerts) > 4:
+            hidden = len(all_alerts) - 3
+            parsed_alerts = all_alerts[:3] + [{
+                'headline': f'+{hidden}条预警',
+                'short_headline': f'+{hidden}条预警',
+                'description': '',
+                'severity': 'minor',
+                'bg_color': '#000000',
+                'text_color': '#FFFFFF',
+                'issued_time': '',
+                'expire_time': ''
+            }]
+        else:
+            parsed_alerts = all_alerts[:4]
 
         logger.info(f"Parsed {len(parsed_alerts)} weather alert(s): {parsed_alerts}")
         return parsed_alerts

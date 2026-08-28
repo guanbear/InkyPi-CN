@@ -569,10 +569,12 @@
         // Function to load settings with default location
         function loadSettings(defaultLat, defaultLng) {
             if ( typeof loadPluginSettings !== 'undefined' && loadPluginSettings) {
-                // 完全使用 default_location，忽略 pluginSettings 中的坐标
-                // 如果没有 default_location，使用东城作为fallback
-                document.getElementById('latitude').value = defaultLat || '39.9042';
-                document.getElementById('longitude').value = defaultLng || '116.4074';
+                // Prefer this instance's saved coordinates; fall back to the
+                // device default location, then Beijing. (Previously the
+                // instance coordinates were always discarded, so editing a
+                // second instance silently reset its location.)
+                document.getElementById('latitude').value = pluginSettings.latitude || defaultLat || '39.9042';
+                document.getElementById('longitude').value = pluginSettings.longitude || defaultLng || '116.4074';
                 document.getElementById('units').value = pluginSettings.units || 'metric';
                 document.getElementById('language').value = pluginSettings.language || 'zh';
                 document.getElementById('themeMode').value = pluginSettings.themeMode || 'auto';

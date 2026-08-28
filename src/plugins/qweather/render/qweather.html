@@ -18,10 +18,9 @@
     <div class="header-bottom-row">
       {% if weather_alerts and weather_alerts|length > 0 %}
       <div class="weather-alerts-inline">
-        {% for alert in weather_alerts[:3] %}
+        {% for alert in weather_alerts[:4] %}
           <div class="weather-alert-inline" style="background-color: {{ alert.bg_color }}; color: {{ alert.text_color }};">
-            <span class="alert-icon-inline">⚠</span>
-            <span class="alert-headline-inline">{{ alert.headline }}</span>
+            <span class="alert-headline-inline">{{ alert.short_headline or alert.headline }}</span>
           </div>
         {% endfor %}
       </div>
@@ -39,7 +38,10 @@
           <div class="current-text">{{ current_text }}</div>
           <div class="current-temp">{{ current_temperature }}<span class="temperature-unit">{{temperature_unit}}</span></div>
           <div class="feels-like"><span class="feels-like-label">{{ labels.feels_like }}</span> <span class="feels-like-value">{{ feels_like }}{% if units != "standard" %}°{% endif %}</span></div>
-          <div class="min-max">{{ forecast[0].high }}{% if units != "standard" %}°{% endif %} / {{ forecast[0].low }}{% if units != "standard" %}°{% endif %}</div>
+          <div class="min-max">
+            <span class="min-max-high"><span class="arrow-high">▲</span>{{ forecast[0].high }}{% if units != "standard" %}°{% endif %}</span>
+            <span class="min-max-low"><span class="arrow-low">▼</span>{{ forecast[0].low }}{% if units != "standard" %}°{% endif %}</span>
+          </div>
         </div>
     </div>
 
@@ -120,6 +122,23 @@
   // Execute immediately without waiting for DOMContentLoaded
   (function() {
 
+    // With alerts: right-align the date with the title text's right edge
+    // (CSS can't align across elements, so measure the title text box)
+    function alignDateToTitle() {
+      const header = document.querySelector('.header.has-alerts');
+      const date = document.querySelector('.current-date');
+      if (!header || !date) return;
+      const title = header.querySelector('.title');
+      const range = document.createRange();
+      range.selectNodeContents(title);
+      const textRight = range.getBoundingClientRect().right;
+      date.style.marginRight = Math.max(0, window.innerWidth - textRight) + 'px';
+    }
+    alignDateToTitle();
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(alignDateToTitle);
+    }
+
     const tempBars = document.querySelectorAll('.temp-bar');
     if (tempBars.length > 0) {
       tempBars.forEach(bar => {
@@ -156,6 +175,9 @@
       });
     }
 
+    // The "Rain Amount" setting toggles the precipitation dataset
+    const showRain = {{ 'true' if plugin_settings.displayRain != "false" else 'false' }};
+
     const canvas = document.getElementById('hourlyTemperatureChart');
     const ctx = canvas.getContext('2d');
     const rect = canvas.getBoundingClientRect();
@@ -166,7 +188,6 @@
     const hours = [{% for hour in hourly_forecast %}{{ hour.hour }}{% if not loop.last %}, {% endif %}{% endfor %}];
     const temperatures = [{% for hour in hourly_forecast %}{{ hour.temperature }}{% if not loop.last %}, {% endif %}{% endfor %}];
     const precipitation = [{% for hour in hourly_forecast %}{{ hour.precipitation }}{% if not loop.last %}, {% endif %}{% endfor %}]; // 0-1 for probability
-    const rain = [{% for hour in hourly_forecast %}{{ hour.rain or 0 }}{% if not loop.last %}, {% endif %}{% endfor %}];
 
     // Sunrise/sunset times
     const sunriseTime = {% if sunrise_time %}"{{ sunrise_time }}"{% else %}null{% endif %};
@@ -184,11 +205,6 @@
     sunsetImg.onload = () => { iconsLoaded++; };
     sunriseImg.src = sunriseIcon;
     sunsetImg.src = sunsetIcon;
-	const units = document.getElementById('units-container').dataset.units;
-	const isImperial = units === "imperial";
-	const unit = isImperial ? "in" : "mm";
-	const threshold = isImperial ? 0.0035 : 0.01;
-
 	// Text color based on theme
 	const textColor = {% if dark_mode %}"#FFFFFF"{% else %}"{{ plugin_settings.textColor|default('#000000') if plugin_settings.textColor else '#000000' }}"{% endif %};
 	console.log('Dark mode:', {% if dark_mode %}true{% else %}false{% endif %}, 'Text color:', textColor);
@@ -430,46 +446,6 @@
       }
     });
 
-    // Precipitation amount annotation plugin (from official weather plugin)
-    Chart.register({
-      id: 'annotationRain',
-      afterDatasetsDraw(chart, args, pluginOptions) {
-        const { ctx } = chart;
-        const rainData = pluginOptions.precipitationData || [];
-        const meta = chart.getDatasetMeta(1);
-
-        ctx.save();
-        ctx.textAlign = 'center';
-        ctx.font = '12px Jost';  // 设置字体与Chart.js一致
-
-        meta.data.forEach((bar, i) => {
-          const rainAmount = rainData[i];
-          if (rainAmount && rainAmount > threshold) {
-            const x = bar.x;
-            const y = bar.y;
-            const base = bar.base;
-            const height = base - y;
-
-            let textY, unitY;
-
-            if (height < 25) {
-              textY = y - 10;
-              unitY = y - 3;
-            } else {
-              textY = y + 13;
-              unitY = y + 20;
-            }
-            ctx.fillStyle = textColor;
-            ctx.fillText(rainAmount.toFixed(2), x, textY);
-            ctx.font = '10px Jost';  // 单位用稍小的字体
-            ctx.fillText(unit, x, unitY);
-          }
-        });
-
-        ctx.restore();
-      }
-    });
-
     const chartInstance = new Chart(ctx, {
       type: 'line',
       data: {
@@ -509,6 +485,7 @@
             left: 0
           },
           yAxisID: 'y1',
+          hidden: !showRain,
           barPercentage: 1.0,
           categoryPercentage: 1.0,
         }
@@ -591,7 +568,6 @@
         },
         plugins: {
           legend: { display: false },
-          annotationRain: { precipitationData: rain }
         },
         elements: {
           line: {

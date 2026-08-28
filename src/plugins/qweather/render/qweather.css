@@ -203,12 +203,58 @@ body {
   position: relative;
 }
 
+.header.has-alerts {
+  height: 21dvh;
+}
+
 .header.has-alerts .title {
-  height: 60%;
+  height: auto;
+  /* 21dvh header would inflate 50cqh to ~50px and clip; keep the same
+     visual size as the no-alert header (~36px at 800x480) */
+  font-size: min(36cqh, 8cqi);
 }
 
 .header.has-alerts .header-bottom-row {
-  height: 40%;
+  height: auto;
+  /* base rule is justify-content: end, which shoves the (now static)
+     badges to the right and over the centered date */
+  justify-content: flex-start;
+}
+
+/* Alerts in a 2x2 grid on the left. Columns size to their content (like
+   the original inline badges) with a cap, instead of equal fixed cells */
+.header.has-alerts .weather-alerts-inline {
+  position: static;
+  width: auto;
+  max-width: 46%;
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  align-self: center;
+  row-gap: 0.5dvh;
+  column-gap: 1vw;
+}
+
+.weather-alert-inline {
+  min-width: 0;
+  max-width: 170px;
+}
+
+.alert-headline-inline {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+}
+
+/* With alerts the date aligns its right edge with the title text's right
+   edge (script-measured; the taller alert header would otherwise inflate
+   30cqh and enlarge the date) */
+.header.has-alerts .current-date {
+  position: static;
+  transform: none;
+  margin-left: auto;
+  align-self: center;
+  font-size: min(21cqh, 6cqi);
 }
 
 .current-date {
@@ -279,7 +325,8 @@ body {
   font-size: min(2.8dvh, 2.8vw);
   font-weight: bold;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-  animation: alertPulse 2s ease-in-out infinite;
+  /* no pulse animation: the e-ink screenshot would catch a random opacity
+     phase and render washed-out badge colors */
 }
 
 .alert-icon-inline {
@@ -417,13 +464,17 @@ body {
 
 /* Forecast Row */
 .forecast {
+  /* 2*9 outer + 6*9 gaps + 7 equal columns = 800 -> each column is exactly
+     104px, so every boundary lands on a whole pixel */
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   justify-content: space-evenly;
   align-items: center;
   width: 100%;
-  gap: 1.5dvw;
+  box-sizing: border-box;
+  padding: 0 9px;
+  gap: 9px;
   overflow: hidden;
 }
 
@@ -431,10 +482,14 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1dvh 0.5vw;
+  padding: 1dvh 0;
+  /* right padding reserves the 8px track for the vertical temp bar, so
+     all day content (incl. the AQI chip) centers in the remaining 96px */
+  padding-right: 8px;
+  box-sizing: border-box;
+  flex: 1 1 0;
   /* border: 1px solid; */ /* Remove border to fill screen */
   border-radius: 1.2vw;
-  flex: 1;
   min-width: 0;
   max-height: 100%;
   gap: 0.5dvh;
@@ -523,10 +578,38 @@ body {
 }
 
 .min-max {
-  font-size: 12cqmin;
+  font-size: clamp(17px, 13cqmin, 19px);
   text-align: center;
   position: relative;
   line-height: 140%;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.6em;
+}
+
+.min-max-high {
+  font-weight: 700;
+}
+
+.min-max-low {
+  font-weight: 500;
+}
+
+/* E6 palette red/blue; digits stay black */
+.arrow-high {
+  color: #FF0000;
+  font-size: 0.85em;
+}
+
+.arrow-low {
+  color: #0000FF;
+  font-size: 0.85em;
+}
+
+.weather-dashboard.dark-mode .arrow-high,
+.weather-dashboard.dark-mode .arrow-low {
+  color: inherit;
 }
 
 .current-text {
@@ -537,7 +620,7 @@ body {
 }
 
 .feels-like {
-  font-size: 10cqmin;
+  font-size: clamp(15px, 11cqmin, 17px);
   text-align: center;
   position: relative;
   line-height: 140%;
@@ -612,9 +695,9 @@ body {
   justify-content: center;
   align-items: center;
   margin-top: 2px;
-  width: 90%;
-  margin-left: auto;
-  margin-right: auto;
+  /* fills the 96px content area (temp bar owns its own 8px track) */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .air-quality-bar {
@@ -638,7 +721,7 @@ body {
 /* Temperature Bars */
 .temp-bar-container {
   position: absolute;
-  right: 1px;
+  right: 0;
   top: 1.2vw;
   bottom: 1.2vw;
   width: 4px;

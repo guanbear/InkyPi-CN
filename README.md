@@ -1,9 +1,30 @@
-# InkyPi 
+# InkyPi-CN
 
 <img src="./docs/images/inky_clock.jpg" />
 
+> **中文** | [English](#about-inkypi-cn-en)
 
-## About InkyPi 
+## 关于 InkyPi-CN
+
+[InkyPi-CN](https://github.com/guanbear/InkyPi-CN) 是 [fatihak/InkyPi](https://github.com/fatihak/InkyPi) 的中国本地化 fork，核心是自研的 **QWeather（和风天气）插件**，专为国内墨水屏天气面板场景优化：
+
+- **QWeather（和风天气）插件**：实时天气 + 24 小时逐时预报 + 7 日预报 + 分钟级降水（可选）+ 空气质量（AQI 彩色标签）+ **气象预警徽章**（按严重程度排序，最多 4 条，超出显示“+N条预警”），支持中文/英文、浅色/深色/随日出日落自动切换
+- **高德地图选点**：设置页内置地图选点、IP 定位、默认位置，无需手工查经纬度
+- **E6 六色墨水屏优化**：调色板量化、Floyd-Steinberg 抖动，图表颜色均选自 E6 标准色
+- **UI 细节**：降水概率柱状图做 3 小时滑动平均显示（平滑不锯齿）、▲▼ 高低温配色箭头、七日预报整数像素等分布局
+- 继承上游全部插件（时钟、日历、图片、AI 等）与 Web 管理界面
+
+**和风天气 API Key**：注册 [和风天气开发者平台](https://dev.qweather.com/) 获取，部署时填入（免费订阅即可用）。
+
+上游的安装说明、硬件清单、插件开发文档见下文英文部分与 [docs](./docs) 目录。
+
+---
+
+# About InkyPi-CN (EN)
+
+[InkyPi-CN](https://github.com/guanbear/InkyPi-CN) is a China-localized fork of [fatihak/InkyPi](https://github.com/fatihak/InkyPi), centered on a custom **QWeather plugin** (QWeather API + Amap location picker + bilingual UI) tuned for 6-color E6 e-ink panels: hourly/daily forecasts, AQI chips, severity-sorted weather alert badges, smoothed precipitation bars, and day/night auto theming. Everything else from upstream (web UI, playlists, plugin ecosystem) is inherited.
+
+## About InkyPi (upstream)
 InkyPi is an open-source, customizable E-Ink display powered by a Raspberry Pi. Designed for simplicity and flexibility, it allows you to effortlessly display the content you care about, with a simple web interface that makes setup and configuration effortless.
 
 **Features**:
@@ -52,11 +73,11 @@ To install InkyPi, follow these steps:
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/fatihak/InkyPi.git
+    git clone https://github.com/guanbear/InkyPi-CN.git
     ```
 2. Navigate to the project directory:
     ```bash
-    cd InkyPi
+    cd InkyPi-CN
     ```
 3. Run the installation script with sudo:
     ```bash
