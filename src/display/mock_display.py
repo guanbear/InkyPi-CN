@@ -75,8 +75,12 @@ class MockDisplay(AbstractDisplay):
                 # Count how many files are newer than this one
                 newer_files = sum(1 for _, f_mtime in files if f_mtime > mtime)
 
-                # Delete if file is too old OR we have too many files (but keep newest ones)
-                if (file_is_old or (len(files) - newer_files > self.max_files)) and newer_files > 0:
+                # Delete if file is too old OR enough newer files exist to
+                # fill the retention window (i.e. this file is beyond the
+                # newest max_files). The previous condition inverted the
+                # comparison and deleted the newest files while keeping the
+                # oldest ones.
+                if (file_is_old or newer_files >= self.max_files) and newer_files > 0:
                     try:
                         os.remove(filepath)
                         deleted_count += 1
