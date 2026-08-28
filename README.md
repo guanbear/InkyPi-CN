@@ -10,7 +10,6 @@
 
 - **QWeather（和风天气）插件**：实时天气 + 24 小时逐时预报 + 7 日预报 + 分钟级降水（可选）+ 空气质量（AQI 彩色标签）+ **气象预警徽章**（按严重程度排序，最多 4 条，超出显示“+N条预警”），支持中文/英文、浅色/深色/随日出日落自动切换
 - **高德地图选点**：设置页内置地图选点、IP 定位、默认位置，无需手工查经纬度
-- **UI 细节**：降水概率柱状图做 3 小时滑动平均显示（平滑不锯齿）、▲▼ 高低温配色箭头、七日预报整数像素等分布局
 - 继承上游全部插件（时钟、日历、图片、AI 等）与 Web 管理界面
 
 **和风天气 API Key**：注册 [和风天气开发者平台](https://dev.qweather.com/) 获取，部署时填入（免费订阅即可用）。
@@ -21,7 +20,7 @@
 
 # About InkyPi-CN (EN)
 
-[InkyPi-CN](https://github.com/guanbear/InkyPi-CN) is a China-localized fork of [fatihak/InkyPi](https://github.com/fatihak/InkyPi), centered on a custom **QWeather plugin** (QWeather API + Amap location picker + bilingual UI): hourly/daily forecasts, AQI chips, severity-sorted weather alert badges, smoothed precipitation bars, and day/night auto theming. Everything else from upstream (web UI, playlists, plugin ecosystem) is inherited.
+[InkyPi-CN](https://github.com/guanbear/InkyPi-CN) is a China-localized fork of [fatihak/InkyPi](https://github.com/fatihak/InkyPi), centered on a custom **QWeather plugin** (QWeather API + Amap location picker + bilingual UI): hourly/daily forecasts, AQI chips, severity-sorted weather alert badges, and day/night auto theming. Everything else from upstream (web UI, playlists, plugin ecosystem) is inherited.
 
 ## About InkyPi (upstream)
 InkyPi is an open-source, customizable E-Ink display powered by a Raspberry Pi. Designed for simplicity and flexibility, it allows you to effortlessly display the content you care about, with a simple web interface that makes setup and configuration effortless.
