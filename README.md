@@ -1,6 +1,6 @@
 # InkyPi-CN
 
-<img src="./docs/images/inky_clock.jpg" />
+<img src="https://showcase.guanbear.com/assets/showcase/four-more-things/weather-station-demo.gif" alt="InkyPi-CN weather station demo" />
 
 > **中文** | [English](#about-inkypi-cn-en)
 
