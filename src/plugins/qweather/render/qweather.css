@@ -386,9 +386,9 @@ body {
   text-align: center;
   align-content: end;
   position: relative;
-  height: 50%;
+  height: 41%;
   /* breathing room between the big number and the feels-like line below */
-  margin-bottom: 0.18em;
+  margin-bottom: 0.12em;
 }
 
 .temperature-unit {
@@ -544,7 +544,7 @@ body {
   height: 100%;
   flex: 1;
   width: 100%;
-  justify-content: center;
+  justify-content: flex-start;
   min-width: 0;
 }
 
@@ -588,6 +588,9 @@ body {
   justify-content: center;
   align-items: baseline;
   gap: 0.6em;
+  /* pin to the column bottom so the high/low line aligns with the
+     bottom edge of the right-hand metrics grid */
+  margin-top: auto;
 }
 
 .min-max-high {
