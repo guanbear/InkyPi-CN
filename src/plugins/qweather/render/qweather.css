@@ -387,6 +387,8 @@ body {
   align-content: end;
   position: relative;
   height: 50%;
+  /* breathing room between the big number and the feels-like line below */
+  margin-bottom: 0.18em;
 }
 
 .temperature-unit {
