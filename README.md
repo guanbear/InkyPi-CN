@@ -6,19 +6,20 @@
 
 ## 关于 InkyPi-CN
 
-[InkyPi-CN](https://github.com/guanbear/InkyPi-CN) 是 [fatihak/InkyPi](https://github.com/fatihak/InkyPi) 的中国本地化 fork，核心是自研的 **QWeather（和风天气）插件**，专为国内墨水屏天气面板场景优化：
+[InkyPi-CN](https://github.com/guanbear/InkyPi-CN) 是 [fatihak/InkyPi](https://github.com/fatihak/InkyPi) 的中国本地化 fork，核心是 **QWeather（和风天气）插件**——以上游官方 weather 插件为基础深度改造扩展而来（约 1,700 行扩展至 4,700 行），专为国内墨水屏天气面板场景优化：
 
 - **QWeather（和风天气）插件**：实时天气 + 24 小时逐时预报 + 7 日预报 + 分钟级降水（可选）+ 空气质量（AQI 彩色标签）+ **气象预警徽章**（按严重程度排序，最多 4 条，超出显示“+N条预警”），支持中文/英文、浅色/深色/随日出日落自动切换
 - **高德地图选点**：设置页内置地图选点、IP 定位、默认位置，无需手工查经纬度
 - 继承上游全部插件（时钟、日历、图片、AI 等）与 Web 管理界面
 
-**UI/视觉细节**（相对上游 weather 插件的完整改动清单）：
+**UI/视觉改动**（相对上游 weather 插件的完整清单；标 ★ 的为上游完全没有的原创功能）：
 
-- 头部：预警徽章等级配色（红/橙/黄/蓝）与严重度排序、短标题提取、2×2 靠左布局、日期右对齐标题；标题居中不受预警影响；当前天气文字（如“阴”）与风力格式（风向+等级+箭头）修正
-- 温度区：体感温度与高低温字号层级重排，高低温 ▲▼ 配色箭头（红▲蓝▼）
-- 24h 图表：温度曲线按日出日落黄/蓝渐变（30 分钟过渡、Catmull-Rom 平滑、白描边防混色）；日出日落图标绘制在小时轴上；降水概率柱状图按概率分色阶、百分比右轴、显示前 3 小时滑动平均平滑；分钟级降水可与小时级合并（前 2 小时 5 分钟精度）
-- 七日预报：Apple 风格纵向温度条（全局范围标准化、渐变色、可开关）；每日 AQI 彩色标签（国标 6 级配色）；可选月相显示；整数像素等分布局（两端留白=列间距）
-- 主题：三种显示风格（默认 / Nothing Weather 像素风·**待完善** / 和风官方 SVG 图标）；深色模式全链路适配（背景/文字/图表/图标/日夜图标检测）；去边距全屏填充 800×480
+- **★ 天气预警徽章**：等级配色（红/橙/黄/蓝）、严重度排序、智能去重、自动过滤已解除预警、最多 4 条 2×2 布局、超出显示“+N条预警”
+- **★ 温度线日夜渐变**：按日出日落自动黄（日）/蓝（夜）渐变，30 分钟过渡，Catmull-Rom 平滑，白描边防混色
+- **★ 每日 AQI 彩色标签**：七日预报每日空气质量标签（国标 6 级配色，当日实况+后续天气估算）
+- **★ 纵向温度条**：Apple 天气风格，全局温度范围标准化、渐变色、独立开关
+- ★ 分钟级降水合并显示（前 2 小时 5 分钟精度）与 API 文件缓存（减少调用量）
+- 其余优化：▲▼ 高低温配色箭头、体感/高低温字号层级、当前天气文字与风力格式修正、降水柱概率色阶+百分比轴+3 小时滑动平均平滑、日出日落图标上小时轴、七日整数像素等分布局（两端留白=列间距）、三种显示风格（默认 / Nothing Weather 像素风·**待完善** / 和风官方 SVG 图标）、深色模式全链路适配、去边距全屏填充
 
 **和风天气 API Key**：注册 [和风天气开发者平台](https://dev.qweather.com/) 获取，部署时填入（免费订阅即可用）。
 
@@ -28,7 +29,7 @@
 
 # About InkyPi-CN (EN)
 
-[InkyPi-CN](https://github.com/guanbear/InkyPi-CN) is a China-localized fork of [fatihak/InkyPi](https://github.com/fatihak/InkyPi), centered on a custom **QWeather plugin** (QWeather API + Amap location picker + bilingual UI): hourly/daily forecasts, AQI chips, severity-sorted weather alert badges, and day/night auto theming. Everything else from upstream (web UI, playlists, plugin ecosystem) is inherited.
+[InkyPi-CN](https://github.com/guanbear/InkyPi-CN) is a China-localized fork of [fatihak/InkyPi](https://github.com/fatihak/InkyPi), centered on a **QWeather plugin** — deeply extended from the upstream weather plugin (~1,700 → ~4,700 lines): hourly/daily forecasts, AQI chips per day, severity-sorted weather alert badges, day/night gradient temperature line, Apple-style per-day temperature range bars, Amap location picker, and bilingual UI. Everything else from upstream (web UI, playlists, plugin ecosystem) is inherited.
 
 ## About InkyPi (upstream)
 InkyPi is an open-source, customizable E-Ink display powered by a Raspberry Pi. Designed for simplicity and flexibility, it allows you to effortlessly display the content you care about, with a simple web interface that makes setup and configuration effortless.
